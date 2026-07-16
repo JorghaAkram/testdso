@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Prove.API</name>
+    </assembly>
+    <members>
+        <member name="M:Prove.API.Controllers.AuthController.Login(Prove.API.Models.Auth.LoginModel,System.Threading.CancellationToken)">
+            <summary>
+            Untuk Login dongg
+            </summary>
+            <param name="q"></param>
+            <param name="cancelationToken"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

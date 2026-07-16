@@ -1,0 +1,57 @@
+name: Windows Server .NET Deployment
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    # Menggunakan Deployment Server Anda sendiri yang sudah diinstal GitHub Runner
+    runs-on: self-hosted 
+
+    steps:
+    # 1. Ambil source code dari repositori ke Deployment Server
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    # 2. Siapkan environment .NET SDK di Deployment Server
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0' # Sesuaikan dengan versi .NET Anda
+
+    # 3. Restore dependencies (NuGet packages)
+    - name: Restore Dependencies
+      run: dotnet restore testdso-master.slnx
+
+    # 4. Jalankan Unit Test otomatis
+    - name: Run Tests
+      run: dotnet test Prove.Tests/Prove.Tests.csproj --no-restore
+
+    # 5. Build dan Publish aplikasi khusus untuk OS Windows 64-bit
+    - name: Publish Application
+      run: dotnet publish Prove.API/Prove.API.csproj -c Release -r win-x64 --self-contained false -o ./publish-folder
+
+    # 6. Kirim file rilis dari Deployment Server ke Windows Server via PowerShell SMB
+    - name: Deploy to Windows Server via SMB Share
+      shell: powershell
+      run: |
+        $securePassword = ConvertTo-SecureString "${{ secrets.WIN_SERVER_PASSWORD }}" -AsPlainText -Force
+        $credential = New-Object System.Management.Automation.PSCredential ("${{ secrets.WIN_SERVER_USER }}", $securePassword)
+        
+        # Membuat koneksi network share ke Windows Server target
+        New-PSDrive -Name "TargetServer" -PSProvider FileSystem -Root "\\${{ secrets.WIN_SERVER_IP }}\c$\inetpub\wwwroot\testdso-app" -Credential $credential
+        
+        # Menyalin file publish baru ke folder IIS Windows Server
+        Copy-Item -Path ".\publish-folder\*" -Destination "TargetServer:\" -Recurse -Force
+        
+        # Putus koneksi network share setelah selesai
+        Remove-PSDrive -Name "TargetServer"
+
+    # 7. Refresh Aplikasi di IIS Windows Server (Opsional/Sesuai Kebutuhan)
+    - name: Restart IIS Website
+      shell: powershell
+      run: |
+        # Perintah opsional jika Anda ingin merestart web pool via PowerShell jarak jauh
+        # Invoke-Command -ComputerName "${{ secrets.WIN_SERVER_IP }}" -Credential $credential -ScriptBlock { Restart-WebAppPool -Name "DefaultAppPool" }
+        echo "Deployment ke Windows Server Berhasil!"
