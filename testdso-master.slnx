@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Prove.API/Prove.API.csproj" />
+  <Project Path="Prove.BusinessLogic/Prove.BusinessLogic.csproj" />
+  <Project Path="Prove.Data/Prove.Data.csproj" />
+  <Project Path="Prove.Tests/Prove.Tests.csproj" />
+  <Project Path="Prove.Utilities/Prove.Utilities.csproj" />
+</Solution>

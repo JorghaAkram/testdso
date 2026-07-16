@@ -1,0 +1,3 @@
+is_global = true
+# Paksa semua aturan keamanan (.NET Security Rules) menjadi berstatus WARNING/ERROR
+dotnet_analyzer_diagnostic.category-Security.severity = warning
